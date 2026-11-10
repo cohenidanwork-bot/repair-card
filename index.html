@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>כרטיס תיקון</title>
+<meta name="description" content="כל העדכונים על התיקון שלך, במקום אחד">
+<meta property="og:title" content="כרטיס תיקון">
+<meta property="og:description" content="כל העדכונים על התיקון שלך, במקום אחד">
+<meta name="theme-color" content="#EFEBE3">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%231C1A17%22/%3E%3Cpath d=%22M9 11h14M9 16h14M9 21h8%22 stroke=%22%23FFFDF8%22 stroke-width=%222.4%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EFEBE3; --paper:#FFFDF8; --ink:#1C1A17; --muted:#6B655C; --faint:#9A9388; --line:#E3DCCF;
+  --accent:#D9481A; --accent-soft:#FBE9E1; --green:#1E7F4F; --green-soft:#E3F2EA;
+  --amber:#A86A12; --amber-soft:#FBF0DC; --wa:#1DA851; --shadow:0 1px 0 rgba(28,26,23,.04),0 8px 24px -12px rgba(28,26,23,.22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:"IBM Plex Sans Hebrew",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;direction:ltr;unicode-bidi:isolate}
+.wrap{max-width:440px;margin:0 auto;padding:16px 16px 132px}
+.hidden{display:none!important}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0 18px}
+.bar h1{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.bar .sub{font-size:13px;color:var(--muted)}
+.icon-btn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--ink)}
+.icon-btn:active{background:rgba(28,26,23,.06)}
+.icon-btn svg{width:22px;height:22px}
+
+/* ticket */
+.ticket{background:var(--paper);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.t-head{padding:18px 18px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.t-shop{font-weight:700;font-size:17px}
+.t-kind{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.t-no{font-size:13px;color:var(--muted);margin-top:2px}
+.perf{height:20px;position:relative;background:
+  radial-gradient(circle at 0 50%,var(--bg) 9px,transparent 9.6px),
+  radial-gradient(circle at 100% 50%,var(--bg) 9px,transparent 9.6px),var(--paper)}
+.perf::after{content:"";position:absolute;top:50%;left:18px;right:18px;border-top:2px dashed var(--line)}
+.t-body{padding:6px 18px 20px}
+.stamp{display:inline-block;border:2.5px solid currentColor;border-radius:8px;padding:3px 11px;font-weight:700;font-size:14px;transform:rotate(-4deg);white-space:nowrap;margin-top:4px}
+.st-rc{color:var(--ink)} .st-in{color:var(--accent)} .st-wp{color:var(--amber)} .st-rd{color:var(--green)} .st-pk{color:var(--faint)}
+.headline{font-size:22px;font-weight:700;line-height:1.25;letter-spacing:-.01em;margin:4px 0 16px}
+
+/* timeline */
+.tl{list-style:none;margin:0 0 18px;padding:0;position:relative}
+.tl li{position:relative;padding:0 30px 14px 0;color:var(--faint);font-size:15px}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;right:5px;top:5px;width:12px;height:12px;border-radius:50%;border:2px solid var(--line);background:var(--paper)}
+.tl li:not(:last-child)::after{content:"";position:absolute;right:10px;top:20px;bottom:-2px;width:2px;background:var(--line)}
+.tl li.done{color:var(--ink)}
+.tl li.done::before{background:var(--ink);border-color:var(--ink)}
+.tl li.done:not(:last-child)::after{background:var(--ink)}
+.tl li.now{color:var(--ink);font-weight:600}
+.tl li.now::before{border-color:var(--accent);background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.tl .note{display:block;font-size:13px;font-weight:500;color:var(--amber);margin-top:2px}
+
+/* details */
+.dl{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:10px}
+.dl .row{display:flex;justify-content:space-between;gap:16px;font-size:15px}
+.dl .k{color:var(--muted)}
+.dl .v{font-weight:600;text-align:left;min-width:0;overflow-wrap:anywhere}
+.strike{text-decoration:line-through;color:var(--faint);font-weight:500;margin-left:6px}
+
+/* callouts */
+.callout{border-radius:14px;padding:14px 16px;margin:16px 0 0}
+.callout h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.callout p{font-size:14.5px;color:var(--ink)}
+.c-price{background:var(--accent-soft)} .c-price h3{color:var(--accent)}
+.c-ready{background:var(--green-soft)} .c-ready h3{color:var(--green)}
+.c-warr{background:var(--green-soft)} .c-warr h3{color:var(--green)}
+.c-info{background:#F3EFE7}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;border-radius:14px;font-weight:600;font-size:16.5px;padding:12px 16px;text-decoration:none;transition:transform .08s ease}
+.btn:active{transform:scale(.985)}
+.btn svg{width:22px;height:22px;flex:none}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-wa{background:var(--wa);color:#fff}
+.btn-line{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn-soft{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn + .btn{margin-top:10px}
+.stack{display:grid;gap:10px;margin-top:16px}
+.dock{position:fixed;inset:auto 0 0 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 70%,rgba(239,235,227,0))}
+.dock .in{max-width:408px;margin:0 auto}
+
+/* forms */
+.field{margin-bottom:18px}
+.label{display:block;font-weight:600;font-size:15px;margin-bottom:8px}
+.hint{font-weight:400;color:var(--muted);font-size:13px}
+.input{width:100%;min-height:50px;border-radius:12px;border:1.5px solid var(--line);background:#fff;padding:12px 14px;font-size:16.5px;outline:none}
+.input:focus{border-color:var(--ink)}
+.input.ltr{direction:ltr;text-align:right}
+.input.err{border-color:var(--accent)}
+.price-in{position:relative}
+.price-in .input{padding-left:40px}
+.price-in::after{content:"₪";position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:15px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chips + .input{margin-top:10px}
+.card{background:var(--paper);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+.section-title{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:22px 2px 10px}
+.err-msg{color:var(--accent);font-size:14px;margin-top:6px}
+
+/* list */
+.list{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.item{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);text-align:right;width:100%}
+.item .main{flex:1;min-width:0}
+.item .t1{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .t2{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.p-rc{background:#EEE9E0;color:var(--ink)} .p-in{background:var(--accent-soft);color:var(--accent)}
+.p-wp{background:var(--amber-soft);color:var(--amber)} .p-rd{background:var(--green-soft);color:var(--green)}
+.p-pk{background:#F1EEE8;color:var(--faint)}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
+
+/* owner actions */
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.act{min-height:64px;border-radius:14px;background:#fff;border:1.5px solid var(--line);font-weight:600;font-size:15px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.act small{font-weight:400;font-size:12px;color:var(--muted)}
+.act.cur{border-color:var(--ink);background:var(--ink);color:#fff}
+.act.cur small{color:rgba(255,255,255,.7)}
+.preview-bar{display:flex;align-items:center;justify-content:space-between;background:var(--ink);color:#fff;border-radius:12px;padding:8px 8px 8px 14px;margin-bottom:14px;font-size:14px}
+.preview-bar button{color:#fff;font-weight:600;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.12)}
+.foot{font-size:12.5px;color:var(--faint);text-align:center;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9;max-width:90vw}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- data ---------- */
+const LS = 'repaircard.v1';
+const FAULTS = {sc:'מסך', bt:'סוללה', ch:'שקע טעינה', cm:'מצלמה', wt:'נפל למים', pw:'לא נדלק', sp:'רמקול / מיקרופון'};
+const DEVICES = ['iPhone', 'Samsung', 'Xiaomi', 'מחשב נייד', 'טאבלט'];
+const ST = {
+  rc:{label:'התקבל', pill:'התקבל'},
+  in:{label:'בתיקון', pill:'בתיקון'},
+  wp:{label:'מחכה לחלק', pill:'מחכה לחלק'},
+  rd:{label:'מוכן לאיסוף', pill:'מוכן'},
+  pk:{label:'נאסף', pill:'נאסף'}
+};
+const WARR = [[0,'ללא'],[30,'30 יום'],[90,'90 יום'],[180,'חצי שנה'],[365,'שנה']];
+const READY = [[0,'היום'],[1,'מחר'],[2,'יומיים'],[7,'שבוע']];
+const DAYS = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+
+function load(){ try { return JSON.parse(localStorage.getItem(LS)) || {shop:null, repairs:[]}; } catch(e){ return {shop:null, repairs:[]}; } }
+function save(){ try { localStorage.setItem(LS, JSON.stringify(S)); } catch(e){} }
+let S = load();
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function enc(o){ const b = new TextEncoder().encode(JSON.stringify(o)); let s=''; b.forEach(x => s += String.fromCharCode(x)); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function dec(t){ t = t.replace(/-/g,'+').replace(/_/g,'/'); while (t.length % 4) t += '='; const s = atob(t); return JSON.parse(new TextDecoder().decode(Uint8Array.from(s, c => c.charCodeAt(0)))); }
+function iso(d){ return d.toISOString().slice(0,10); }
+function addDays(n, from){ const d = from ? new Date(from+'T12:00:00') : new Date(); d.setHours(12); d.setDate(d.getDate()+n); return iso(d); }
+function fmtDay(isoDate){
+  if (!isoDate) return '';
+  const d = new Date(isoDate+'T12:00:00'), t = new Date(); t.setHours(12,0,0,0);
+  const diff = Math.round((d - t)/864e5);
+  const dm = d.getDate()+'.'+(d.getMonth()+1);
+  if (diff === 0) return 'היום, ' + dm;
+  if (diff === 1) return 'מחר, ' + dm;
+  return 'יום ' + DAYS[d.getDay()] + ' ' + dm;
+}
+function fmtFull(isoDate){ const d = new Date(isoDate+'T12:00:00'); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); }
+function waNum(p){ let d = String(p||'').replace(/\D/g,''); if (d.startsWith('0')) d = '972' + d.slice(1); return d; }
+function validMobile(p){ return /^05\d{8}$/.test(String(p||'').replace(/\D/g,'')) || /^9725\d{8}$/.test(String(p||'').replace(/\D/g,'')); }
+function faultText(r){ const f = (r.f||[]).map(k => FAULTS[k]).filter(Boolean); if (r.x) f.push(r.x); return f.join(', '); }
+function price(r){ return r.np ?? r.e; }
+function shekelH(n){ return n == null ? '' : '<span dir="ltr" style="white-space:nowrap">' + Number(n).toLocaleString('he-IL') + ' ₪</span>'; }
+function shekel(n){ return n == null ? '' : Number(n).toLocaleString('he-IL') + ' ₪'; }
+function newId(){ let id; do { id = 'R-' + Math.floor(1000 + Math.random()*9000); } while (S.repairs.some(r => r.i === id)); return id; }
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2200); }
+function reviewUrl(c){ return c.g || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(c.s)); }
+function payload(r){ const sh = S.shop || {}; const {ph, u, ...pub} = r; return enc({v:1, s:sh.name, p:sh.phone, g:sh.review||'', ...pub}); }
+function custLink(r){ return location.origin + location.pathname + '#c=' + payload(r); }
+function openWA(phone, text){ const url = 'https://wa.me/' + waNum(phone) + '?text=' + encodeURIComponent(text); const w = window.open(url, '_blank'); if (!w) location.href = url; }
+function go(h){ if (location.hash === h) route(); else location.hash = h; }
+
+const IC = {
+  wa:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9L12 2.5Z"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>'
+};
+
+/* ---------- shared ticket (customer view) ---------- */
+function headline(c){
+  const d = esc(c.d);
+  return {rc:`קיבלנו את ה־${d} שלך`, in:`ה־${d} בתיקון עכשיו`, wp:`מחכים לחלק ל־${d}`, rd:`ה־${d} מוכן לאיסוף`, pk:`נאסף. תודה שבאת!`}[c.st];
+}
+function timeline(c){
+  const order = ['rc','in','rd','pk'];
+  const pos = c.st === 'wp' ? 1 : order.indexOf(c.st);
+  const names = ['התקבל במעבדה','בתיקון','מוכן לאיסוף','נאסף'];
+  return '<ol class="tl">' + names.map((n,i) => {
+    const cls = i < pos ? 'done' : i === pos ? (c.st === 'pk' ? 'done' : 'now') : '';
+    const note = (i === 1 && c.st === 'wp') ? '<span class="note">מחכים לחלק, נעדכן כשמגיע</span>' : '';
+    return `<li class="${cls}">${n}${note}</li>`;
+  }).join('') + '</ol>';
+}
+function ticketHTML(c){
+  const pending = c.np != null && !c.ok && c.st !== 'pk';
+  const priceRow = c.e == null && c.np == null
+    ? `<div class="row"><span class="k">מחיר</span><span class="v">אחרי בדיקה</span></div>`
+    : `<div class="row"><span class="k">${c.np != null ? 'מחיר מעודכן' : 'הערכת מחיר'}</span><span class="v">${c.np != null && c.e != null ? `<span class="strike">${shekelH(c.e)}</span>` : ''}${shekelH(price(c))}</span></div>`;
+  const warrRow = c.w
+    ? `<div class="row"><span class="k">אחריות</span><span class="v">${c.st === 'pk' && c.k ? 'עד ' + fmtFull(addDays(c.w, c.k)) : WARR.find(w => w[0] === c.w)?.[1] + ' מיום האיסוף'}</span></div>`
+    : '';
+  let callouts = '';
+  if (pending) callouts += `<div class="callout c-price"><h3>המחיר השתנה, מחכים לאישור שלך</h3><p>${esc(c.nr || 'נמצא צורך בעבודה נוספת')}. ${c.e != null ? `במקום ${shekelH(c.e)}, ` : ''}המחיר עכשיו ${shekelH(c.np)}. לא נמשיך בלי אישור שלך.</p>
+    <div class="stack">${c.p ? `<button class="btn btn-wa" data-wa-approve>${IC.wa}מאשר/ת את המחיר החדש</button><a class="btn btn-soft" href="tel:${esc(c.p)}">${IC.phone}רוצה לדבר קודם</a>` : ''}</div></div>`;
+  if (c.st === 'rd') callouts += `<div class="callout c-ready"><h3>אפשר לבוא לאסוף</h3><p>לתשלום: ${price(c) != null ? shekelH(price(c)) : 'לפי מה שסוכם'}.</p></div>`;
+  if (c.st === 'pk') callouts += `${c.w ? `<div class="callout c-warr"><h3>האחריות בתוקף עד ${fmtFull(addDays(c.w, c.k))}</h3><p>שמרו את הקישור הזה. הוא תעודת האחריות שלכם, עם כל מה שסוכם.</p></div>` : ''}
+    <div class="stack"><a class="btn btn-ink" href="${esc(reviewUrl(c))}" target="_blank" rel="noopener">${IC.star}איך היה? השאירו לנו ביקורת בגוגל</a></div>`;
+  return `<article class="ticket">
+    <div class="t-head">
+      <div><div class="t-kind">כרטיס תיקון</div><div class="t-shop">${esc(c.s)}</div><div class="t-no mono">#${esc(c.i)}</div></div>
+      <span class="stamp st-${c.st}">${ST[c.st].label}</span>
+    </div>
+    <div class="perf"></div>
+    <div class="t-body">
+      <h2 class="headline">${headline(c)}</h2>
+      ${timeline(c)}
+      <div class="dl">
+        <div class="row"><span class="k">מכשיר</span><span class="v">${esc(c.d)}</span></div>
+        <div class="row"><span class="k">תקלה</span><span class="v">${esc(faultText(c))}</span></div>
+        ${priceRow}
+        ${c.st !== 'pk' && c.r ? `<div class="row"><span class="k">צפי</span><span class="v">${fmtDay(c.r)}</span></div>` : ''}
+        ${warrRow}
+        ${c.cn ? `<div class="row"><span class="k">מצב בקבלה</span><span class="v">${esc(c.cn)}</span></div>` : ''}
+      </div>
+      ${callouts}
+    </div>
+  </article>`;
+}
+
+/* ---------- views ---------- */
+function viewCustomer(token){
+  let c;
+  try { c = dec(token); } catch(e){ $('#app').innerHTML = `<div class="empty"><b>הקישור לא תקין</b>בקשו מהמעבדה לשלוח אותו שוב.</div>`; return; }
+  const mine = S.repairs.find(r => r.i === c.i);
+  $('#app').innerHTML = `
+    ${mine ? `<div class="preview-bar"><span>${IC.eye.replace('<svg','<svg style="width:18px;height:18px;vertical-align:-4px;margin-left:6px"')}ככה הלקוח רואה את זה</span><button data-back="#/r/${esc(c.i)}">חזרה</button></div>` : ''}
+    ${ticketHTML(c)}
+    ${c.p ? `<div class="stack"><button class="btn btn-wa" data-wa-ask>${IC.wa}שאלה? כתבו לנו בווטסאפ</button></div>` : ''}
+    <p class="foot">נפתח ב־${fmtFull(c.t)} · כרטיס תיקון</p>`;
+  const ask = $('[data-wa-ask]'); if (ask) ask.onclick = () => openWA(c.p, `היי, לגבי כרטיס תיקון #${c.i} (${c.d}):\n`);
+  const ap = $('[data-wa-approve]'); if (ap) ap.onclick = () => openWA(c.p, `מאשר/ת את המחיר החדש (${shekel(c.np)}) לכרטיס #${c.i}. אפשר להמשיך 👍`);
+  const b = $('[data-back]'); if (b) b.onclick = () => go(b.dataset.back);
+  document.title = c.s + ' · כרטיס תיקון';
+}
+
+function viewSetup(){
+  const sh = S.shop || {name:'', phone:'', review:''};
+  $('#app').innerHTML = `
+    <div class="bar"><div><h1>${S.shop ? 'פרטי המעבדה' : 'בוא נתחיל'}</h1><div class="sub">שלושה פרטים, פעם אחת</div></div>
+      ${S.shop ? `<button class="icon-btn" data-back aria-label="חזרה">${IC.back}</button>` : ''}</div>
+    <div class="card">
+      <div class="field"><label class="label" for="f-name">שם המעבדה</label><input class="input" id="f-name" value="${esc(sh.name)}" placeholder="למשל: פיקס סלולר דיזנגוף" autocomplete="organization"></div>
+      <div class="field"><label class="label" for="f-phone">הווטסאפ של המעבדה <span class="hint">לשם הלקוחות עונים</span></label><input class="input ltr" id="f-phone" type="tel" inputmode="tel" value="${esc(sh.phone)}" placeholder="050-1234567"></div>
+      <div class="field" style="margin:0"><label class="label" for="f-rev">קישור לביקורת בגוגל <span class="hint">לא חובה</span></label><input class="input ltr" id="f-rev" type="url" value="${esc(sh.review)}" placeholder="https://g.page/r/..."><div class="hint" style="margin-top:6px">בלי קישור, הכפתור פותח את המעבדה בגוגל מפות.</div></div>
+    </div>
+    ${S.shop ? `<div class="stack"><button class="btn btn-line" data-reset>מחיקת כל הכרטיסים</button></div>` : ''}
+    <div class="dock"><div class="in"><button class="btn btn-ink" data-save>שמירה</button></div></div>`;
+  const back = $('[data-back]'); if (back) back.onclick = () => go('#/');
+  const reset = $('[data-reset]'); if (reset) reset.onclick = () => { if (confirm('למחוק את כל הכרטיסים מהטלפון?')) { S.repairs = []; save(); toast('נמחק'); go('#/'); } };
+  $('[data-save]').onclick = () => {
+    const name = $('#f-name').value.trim(), phone = $('#f-phone').value.trim(), review = $('#f-rev').value.trim();
+    let bad = false;
+    $('#f-name').classList.toggle('err', !name); if (!name) bad = true;
+    const pOk = validMobile(phone); $('#f-phone').classList.toggle('err', !pOk); if (!pOk) bad = true;
+    if (bad) { toast(!name ? 'חסר שם מעבדה' : 'מספר נייד לא תקין'); return; }
+    S.shop = {name, phone, review}; save(); go('#/');
+  };
+}
+
+function viewHome(){
+  if (!S.shop) return viewSetup();
+  const open = S.repairs.filter(r => r.st !== 'pk').length;
+  const list = [...S.repairs].sort((a,b) => (b.u||0) - (a.u||0));
+  $('#app').innerHTML = `
+    <div class="bar"><div><h1>${esc(S.shop.name)}</h1><div class="sub">${open === 1 ? 'תיקון אחד פתוח' : open ? open + ' תיקונים פתוחים' : 'אין תיקונים פתוחים'}</div></div>
+      <button class="icon-btn" data-setup aria-label="פרטי המעבדה">${IC.gear}</button></div>
+    ${list.length ? `<div class="list">${list.map(r => `
+      <button class="item" data-open="${esc(r.i)}">
+        <div class="main"><div class="t1">${esc(r.n)} · ${esc(r.d)}</div><div class="t2"><span class="mono">#${esc(r.i)}</span> · ${esc(faultText(r))}</div></div>
+        <span class="pill p-${r.st}">${ST[r.st].pill}</span>
+      </button>`).join('')}</div>`
+    : `<div class="empty"><b>עוד אין כרטיסים</b>פותחים כרטיס ראשון בדקה, והלקוח מקבל אותו בווטסאפ.</div>`}
+    <div class="dock"><div class="in"><button class="btn btn-ink" data-new>${IC.plus}כרטיס תיקון חדש</button></div></div>`;
+  $('[data-setup]').onclick = () => go('#/setup');
+  $('[data-new]').onclick = () => go('#/new');
+  document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => go('#/r/' + b.dataset.open));
+}
+
+function chipGroup(id, options, multi, selected){
+  return `<div class="chips" id="${id}" data-multi="${multi?1:0}">${options.map(([v,l]) => `<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="${(multi ? selected.includes(v) : selected === v) ? 'true':'false'}">${esc(l)}</button>`).join('')}</div>`;
+}
+function wireChips(id, onChange){
+  const g = document.getElementById(id); const multi = g.dataset.multi === '1';
+  g.querySelectorAll('.chip').forEach(ch => ch.onclick = () => {
+    if (multi) ch.setAttribute('aria-pressed', ch.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    else g.querySelectorAll('.chip').forEach(o => o.setAttribute('aria-pressed', o === ch ? 'true' : 'false'));
+    onChange && onChange(ch.dataset.v, ch.getAttribute('aria-pressed') === 'true');
+  });
+}
+function chipVals(id){ return [...document.querySelectorAll('#'+id+' .chip[aria-pressed="true"]')].map(c => c.dataset.v); }
+
+function viewNew(){
+  if (!S.shop) return go('#/setup');
+  $('#app').innerHTML = `
+    <div class="bar"><div><h1>כרטיס חדש</h1><div class="sub">הלקוח מקבל אותו בווטסאפ</div></div>
+      <button class="icon-btn" data-back aria-label="חזרה">${IC.back}</button></div>
+    <div class="card">
+      <div class="field"><label class="label" for="n-name">שם הלקוח</label><input class="input" id="n-name" placeholder="דני" autocomplete="off"></div>
+      <div class="field"><label class="label" for="n-phone">נייד של הלקוח</label><input class="input ltr" id="n-phone" type="tel" inputmode="tel" placeholder="050-1234567"></div>
+      <div class="field"><label class="label" for="n-dev">מכשיר</label>
+        ${chipGroup('n-devc', DEVICES.map(d => [d,d]), false, '')}
+        <input class="input" id="n-dev" placeholder="דגם, למשל iPhone 13"></div>
+      <div class="field"><span class="label">מה התקלה</span>
+        ${chipGroup('n-flt', Object.entries(FAULTS), true, [])}
+        <input class="input" id="n-fx" placeholder="פירוט נוסף (לא חובה)"></div>
+      <div class="field"><label class="label" for="n-cond">מצב המכשיר בקבלה <span class="hint">שריטות, סדקים. חוסך ויכוחים</span></label><input class="input" id="n-cond" placeholder="למשל: שריטה בגב, בלי כיסוי"></div>
+      <div class="field"><label class="label" for="n-price">הערכת מחיר</label>
+        <div class="price-in"><input class="input ltr" id="n-price" type="number" inputmode="numeric" placeholder="650"></div>
+        <div class="chips" style="margin-top:10px"><button type="button" class="chip" id="n-later" aria-pressed="false">אחרי בדיקה</button></div></div>
+      <div class="field"><span class="label">מתי יהיה מוכן</span>${chipGroup('n-ready', READY.map(([v,l]) => [String(v), l]), false, '1')}</div>
+      <div class="field" style="margin:0"><span class="label">אחריות על התיקון</span>${chipGroup('n-warr', WARR.map(([v,l]) => [String(v), l]), false, '90')}</div>
+    </div>
+    <div class="stack"><button class="btn btn-line" data-demo>מילוי לדוגמה</button></div>
+    <div class="dock"><div class="in"><button class="btn btn-wa" data-create>${IC.wa}פתיחת כרטיס ושליחה ללקוח</button></div></div>`;
+  $('[data-back]').onclick = () => go('#/');
+  wireChips('n-devc', v => { const i = $('#n-dev'); i.value = v + ' '; i.focus(); });
+  wireChips('n-flt'); wireChips('n-ready'); wireChips('n-warr');
+  const later = $('#n-later');
+  later.onclick = () => { const on = later.getAttribute('aria-pressed') !== 'true'; later.setAttribute('aria-pressed', on); $('#n-price').disabled = on; if (on) $('#n-price').value = ''; };
+  $('[data-demo]').onclick = () => {
+    $('#n-name').value = 'דני'; $('#n-dev').value = 'iPhone 13';
+    document.querySelectorAll('#n-flt .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.v === 'sc' ? 'true' : 'false'));
+    $('#n-cond').value = 'שריטה קטנה בגב'; $('#n-price').value = '650';
+    toast('נשאר רק להכניס נייד של לקוח'); $('#n-phone').focus();
+  };
+  $('[data-create]').onclick = () => {
+    const n = $('#n-name').value.trim(), ph = $('#n-phone').value.trim(), d = $('#n-dev').value.trim();
+    const f = chipVals('n-flt'), x = $('#n-fx').value.trim(), cn = $('#n-cond').value.trim();
+    const isLater = later.getAttribute('aria-pressed') === 'true', pv = $('#n-price').value.trim();
+    const checks = [['#n-name', !n, 'חסר שם לקוח'], ['#n-phone', !validMobile(ph), 'מספר נייד לא תקין'], ['#n-dev', !d, 'חסר מכשיר']];
+    for (const [sel, bad] of checks) $(sel).classList.toggle('err', bad);
+    const firstBad = checks.find(c => c[1]);
+    if (firstBad) { toast(firstBad[2]); $(firstBad[0]).focus(); return; }
+    if (!f.length && !x) { toast('בחר מה התקלה'); return; }
+    if (!isLater && !pv) { toast('חסרה הערכת מחיר (או "אחרי בדיקה")'); $('#n-price').focus(); return; }
+    const r = {i:newId(), n, ph, d, f, x, cn, e: isLater ? null : Number(pv), r: addDays(Number(chipVals('n-ready')[0] ?? 1)), w: Number(chipVals('n-warr')[0] ?? 0), st:'rc', t: iso(new Date()), u: Date.now()};
+    S.repairs.push(r); save();
+    const pr = r.e == null ? 'מחיר: אחרי בדיקה, נאשר איתך לפני שמתקנים' : 'הערכת מחיר: ' + shekel(r.e);
+    openWA(ph, `היי ${n}, כאן ${S.shop.name} 👋\nקיבלנו את ה־${d} לתיקון (${faultText(r)}).\n${pr} · צפי: ${fmtDay(r.r)}\nכל הפרטים והעדכונים כאן:\n${custLink(r)}`);
+    go('#/r/' + r.i);
+  };
+}
+
+function statusMsg(r){
+  const L = custLink(r), n = r.n, d = r.d;
+  return {
+    in:`היי ${n}, ה־${d} נמצא עכשיו בתיקון 🔧\n${L}`,
+    wp:`היי ${n}, אנחנו מחכים לחלק ל־${d}. נעדכן ברגע שהוא מגיע.\n${L}`,
+    rd:`היי ${n}, ה־${d} מוכן לאיסוף ✅\n${price(r) != null ? 'לתשלום: ' + shekel(price(r)) + '\n' : ''}${L}`,
+    pk:`תודה ${n}! ${r.w ? 'האחריות על התיקון בתוקף עד ' + fmtFull(addDays(r.w, r.k)) + '. ' : ''}הכול שמור כאן:\n${L}`,
+    rc:`היי ${n}, עדכון לגבי ה־${d}:\n${L}`
+  }[r.st];
+}
+
+function viewRepair(id){
+  const r = S.repairs.find(x => x.i === id);
+  if (!r) return go('#/');
+  const c = {s:S.shop.name, p:S.shop.phone, g:S.shop.review, ...r};
+  const steps = ['in','wp','rd','pk'];
+  const sub = {in:'שולח עדכון', wp:'שולח עדכון', rd:'הלקוח מקבל הודעה', pk:'שולח אחריות + ביקורת'};
+  $('#app').innerHTML = `
+    <div class="bar"><div><h1>${esc(r.n)}</h1><div class="sub mono" style="text-align:right">#${esc(r.i)} · ${esc(r.ph)}</div></div>
+      <button class="icon-btn" data-back aria-label="חזרה">${IC.back}</button></div>
+    <div class="section-title">עדכון ללקוח</div>
+    <div class="acts">${steps.map(s => `<button class="act ${r.st === s ? 'cur' : ''}" data-st="${s}">${ST[s].label}<small>${r.st === s ? 'המצב עכשיו' : sub[s]}</small></button>`).join('')}</div>
+    <div class="stack">
+      <button class="btn btn-soft" data-price>המחיר משתנה?</button>
+      <div class="card hidden" id="pricebox">
+        <div class="field"><label class="label" for="p-new">מחיר חדש</label><div class="price-in"><input class="input ltr" id="p-new" type="number" inputmode="numeric" value="${r.np ?? ''}"></div></div>
+        <div class="field"><span class="label">למה</span>${chipGroup('p-why', [['נדרש חלק נוסף','נדרש חלק נוסף'],['נמצאה תקלה נוספת','נמצאה תקלה נוספת'],['החלק יקר מהצפוי','החלק יקר מהצפוי']], false, r.nr || '')}</div>
+        <button class="btn btn-wa" data-send-price>${IC.wa}שליחה לאישור הלקוח</button>
+      </div>
+      ${r.np != null && !r.ok ? `<button class="btn btn-line" data-approved>הלקוח אישר את המחיר החדש</button>` : ''}
+    </div>
+    <div class="section-title">מה הלקוח רואה</div>
+    ${ticketHTML(c)}
+    <div class="stack"><button class="btn btn-soft" data-preview>${IC.eye}לפתוח כמו הלקוח</button></div>`;
+  $('[data-back]').onclick = () => go('#/');
+  $('[data-preview]').onclick = () => go('#c=' + payload(r));
+  document.querySelectorAll('[data-st]').forEach(b => b.onclick = () => {
+    const s = b.dataset.st;
+    if (s === r.st) { openWA(r.ph, statusMsg(r)); return; }
+    r.st = s; r.u = Date.now(); if (s === 'pk') r.k = iso(new Date());
+    save(); openWA(r.ph, statusMsg(r)); viewRepair(id);
+  });
+  $('[data-price]').onclick = () => { $('#pricebox').classList.toggle('hidden'); $('#p-new').focus(); };
+  wireChips('p-why');
+  $('[data-send-price]').onclick = () => {
+    const np = $('#p-new').value.trim(); if (!np) { toast('חסר מחיר חדש'); return; }
+    r.np = Number(np); r.nr = chipVals('p-why')[0] || ''; r.ok = false; r.u = Date.now(); save();
+    openWA(r.ph, `היי ${r.n}, ${r.nr ? 'בבדיקה של ה־' + r.d + ' ' + r.nr : 'עדכון מחיר לתיקון של ה־' + r.d}.\nהמחיר המעודכן:${shekel(r.np)}${r.e != null ? ' (במקום ' + shekel(r.e) + ')' : ''}.\nלא נמשיך בלי אישור שלך:\n${custLink(r)}`);
+    viewRepair(id);
+  };
+  const ok = $('[data-approved]'); if (ok) ok.onclick = () => { r.ok = true; r.u = Date.now(); save(); toast('סומן כמאושר'); viewRepair(id); };
+}
+
+/* ---------- router ---------- */
+function route(){
+  S = load();
+  window.scrollTo(0,0);
+  document.title = 'כרטיס תיקון';
+  const h = location.hash;
+  if (h.startsWith('#c=')) return viewCustomer(h.slice(3));
+  if (h === '#/setup') return viewSetup();
+  if (h === '#/new') return viewNew();
+  if (h.startsWith('#/r/')) return viewRepair(decodeURIComponent(h.slice(4)));
+  return viewHome();
+}
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
