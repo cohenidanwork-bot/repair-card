@@ -195,10 +195,35 @@ function shekel(n){ return n == null ? '' : Number(n).toLocaleString('he-IL') + 
 function newId(){ let id; do { id = 'R-' + Math.floor(1000 + Math.random()*9000); } while (S.repairs.some(r => r.i === id)); return id; }
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2200); }
 function reviewUrl(c){ return c.g || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(c.s)); }
-function payload(r){ const sh = S.shop || {}; const {ph, u, ...pub} = r; return enc({v:1, s:sh.name, p:sh.phone, g:sh.review||'', ...pub}); }
+function payload(r){ const sh = S.shop || {}; const {ph, u, ...pub} = r; return enc({v:1, s:sh.name, p:sh.phone, g:sh.review||'', ...(isInternal() ? {q:1} : {}), ...pub}); }
 function custLink(r){ return location.origin + location.pathname + '#c=' + payload(r); }
 function openWA(phone, text){ const url = 'https://wa.me/' + waNum(phone) + '?text=' + encodeURIComponent(text); const w = window.open(url, '_blank'); if (!w) location.href = url; }
 function go(h){ if (location.hash === h) route(); else location.hash = h; }
+
+/* ---------- analytics: PostHog EU, same project as the other apps. Anonymous, nothing personal:
+   never customer names, phones, devices or free text. The shop name is sent (it's a business). ---------- */
+const PH = {key:'phc_yW6thwDh6fSq4jFp5Aue4MBqz8iKqW6ygotvJNNTgee6', host:'https://eu.i.posthog.com', app:'com.idancoh.repaircard', ver:'0.3'};
+const LSA = 'repaircard.aid', LSI = 'repaircard.internal';
+let internalCard = false, viewShop = null; // a card link made by an internal tester marks this visit as internal
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function lsSet(k, v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch(e){} }
+function anonId(){ let id = lsGet(LSA); if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); lsSet(LSA, id); } return id; }
+function isInternal(){ return lsGet(LSI) === '1'; }
+const PLATFORM = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'ios' : /Android/.test(navigator.userAgent) ? 'android' : 'desktop';
+const STANDALONE = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+function track(event, props){
+  try {
+    const body = JSON.stringify({api_key:PH.key, event, distinct_id:anonId(), properties:Object.assign({
+      $app_namespace:PH.app, $app_version:PH.ver, $lib:'repair-card-web', $process_person_profile:false,
+      $current_url:location.origin + location.pathname, $host:location.host, $pathname:location.pathname,
+      $os:{ios:'iOS', android:'Android', desktop:'desktop'}[PLATFORM], platform:PLATFORM, standalone:STANDALONE,
+      traffic_type:(isInternal() || internalCard) ? 'internal' : 'user', shop:viewShop || (S.shop && S.shop.name) || null
+    }, props || {})});
+    // text/plain keeps it a simple request, so keepalive works and the event survives the jump to WhatsApp
+    fetch(PH.host + '/i/v0/e/', {method:'POST', body, keepalive:true, headers:{'Content-Type':'text/plain'}}).catch(() => {});
+  } catch(e){}
+}
+function daysSince(isoDate){ return isoDate ? Math.max(0, Math.round((new Date(iso(new Date())+'T12:00:00') - new Date(isoDate+'T12:00:00'))/864e5)) : null; }
 
 const IC = {
   wa:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>',
@@ -235,10 +260,10 @@ function ticketHTML(c){
     : '';
   let callouts = '';
   if (pending) callouts += `<div class="callout c-price"><h3>המחיר השתנה, מחכים לאישור שלך</h3><p>${esc(c.nr || 'נמצא צורך בעבודה נוספת')}. ${c.e != null ? `במקום ${shekelH(c.e)}, ` : ''}המחיר עכשיו ${shekelH(c.np)}. לא נמשיך בלי אישור שלך.</p>
-    <div class="stack">${c.p ? `<button class="btn btn-wa" data-wa-approve>${IC.wa}מאשר/ת את המחיר החדש</button><a class="btn btn-soft" href="tel:${esc(c.p)}">${IC.phone}רוצה לדבר קודם</a>` : ''}</div></div>`;
+    <div class="stack">${c.p ? `<button class="btn btn-wa" data-wa-approve>${IC.wa}מאשר/ת את המחיר החדש</button><a class="btn btn-soft" data-call href="tel:${esc(c.p)}">${IC.phone}רוצה לדבר קודם</a>` : ''}</div></div>`;
   if (c.st === 'rd') callouts += `<div class="callout c-ready"><h3>אפשר לבוא לאסוף</h3><p>לתשלום: ${price(c) != null ? shekelH(price(c)) : 'לפי מה שסוכם'}.</p></div>`;
   if (c.st === 'pk') callouts += `${c.w ? `<div class="callout c-warr"><h3>האחריות בתוקף עד ${fmtFull(addDays(c.w, c.k))}</h3><p>שמרו את הקישור הזה. הוא תעודת האחריות שלכם, עם כל מה שסוכם.</p></div>` : ''}
-    <div class="stack"><a class="btn btn-ink" href="${esc(reviewUrl(c))}" target="_blank" rel="noopener">${IC.star}איך היה? השאירו לנו ביקורת בגוגל</a></div>`;
+    <div class="stack"><a class="btn btn-ink" data-review href="${esc(reviewUrl(c))}" target="_blank" rel="noopener">${IC.star}איך היה? השאירו לנו ביקורת בגוגל</a></div>`;
   return `<article class="ticket">
     <div class="t-head">
       <div><div class="t-kind">כרטיס תיקון</div><div class="t-shop">${esc(c.s)}</div><div class="t-no mono">#${esc(c.i)}</div></div>
@@ -271,8 +296,14 @@ function viewCustomer(token){
     ${ticketHTML(c)}
     ${c.p ? `<div class="stack"><button class="btn btn-wa" data-wa-ask>${IC.wa}שאלה? כתבו לנו בווטסאפ</button></div>` : ''}
     <p class="foot">נפתח ב־${fmtFull(c.t)} · כרטיס תיקון</p>`;
-  const ask = $('[data-wa-ask]'); if (ask) ask.onclick = () => openWA(c.p, `היי, לגבי כרטיס תיקון #${c.i} (${c.d}):\n`);
-  const ap = $('[data-wa-approve]'); if (ap) ap.onclick = () => openWA(c.p, `מאשר/ת את המחיר החדש (${shekel(c.np)}) לכרטיס #${c.i}. אפשר להמשיך 👍`);
+  if (c.q) internalCard = true;
+  viewShop = c.s || null;
+  const cv = {status:c.st, preview:!!mine};
+  track('card_viewed', Object.assign({price_pending:c.np != null && !c.ok && c.st !== 'pk', warranty_days:c.w || 0, estimate:c.e != null, days_open:daysSince(c.t)}, cv));
+  const ask = $('[data-wa-ask]'); if (ask) ask.onclick = () => { track('customer_whatsapp', Object.assign({why:'question'}, cv)); openWA(c.p, `היי, לגבי כרטיס תיקון #${c.i} (${c.d}):\n`); };
+  const ap = $('[data-wa-approve]'); if (ap) ap.onclick = () => { track('customer_whatsapp', Object.assign({why:'approve_price'}, cv)); openWA(c.p, `מאשר/ת את המחיר החדש (${shekel(c.np)}) לכרטיס #${c.i}. אפשר להמשיך 👍`); };
+  const call = $('[data-call]'); if (call) call.addEventListener('click', () => track('customer_call', cv));
+  const rev = $('[data-review]'); if (rev) rev.addEventListener('click', () => track('review_clicked', Object.assign({custom_link:!!c.g}, cv)));
   const b = $('[data-back]'); if (b) b.onclick = () => go(b.dataset.back);
   document.title = c.s + ' · כרטיס תיקון';
 }
@@ -290,14 +321,14 @@ function viewSetup(){
     ${S.shop ? `<div class="stack"><button class="btn btn-line" data-reset>מחיקת כל הכרטיסים</button></div>` : ''}
     <div class="dock"><div class="in"><button class="btn btn-ink" data-save>שמירה</button></div></div>`;
   const back = $('[data-back]'); if (back) back.onclick = () => go('#/');
-  const reset = $('[data-reset]'); if (reset) reset.onclick = () => { if (confirm('למחוק את כל הכרטיסים מהטלפון?')) { S.repairs = []; save(); toast('נמחק'); go('#/'); } };
+  const reset = $('[data-reset]'); if (reset) reset.onclick = () => { if (confirm('למחוק את כל הכרטיסים מהטלפון?')) { track('cards_reset', {cards:S.repairs.length}); S.repairs = []; save(); toast('נמחק'); go('#/'); } };
   $('[data-save]').onclick = () => {
     const name = $('#f-name').value.trim(), phone = $('#f-phone').value.trim(), review = $('#f-rev').value.trim();
     let bad = false;
     $('#f-name').classList.toggle('err', !name); if (!name) bad = true;
     const pOk = validMobile(phone); $('#f-phone').classList.toggle('err', !pOk); if (!pOk) bad = true;
-    if (bad) { toast(!name ? 'חסר שם מעבדה' : 'מספר נייד לא תקין'); return; }
-    S.shop = {name, phone, review}; save(); go('#/');
+    if (bad) { track('form_error', {form:'setup', field:!name ? 'name' : 'phone'}); toast(!name ? 'חסר שם מעבדה' : 'מספר נייד לא תקין'); return; }
+    const first = !S.shop; S.shop = {name, phone, review}; save(); track('shop_saved', {first, review_link:!!review}); go('#/');
   };
 }
 
@@ -317,6 +348,9 @@ function viewHome(){
     <div class="dock"><div class="in"><button class="btn btn-ink" data-new>${IC.plus}כרטיס תיקון חדש</button></div></div>`;
   $('[data-setup]').onclick = () => go('#/setup');
   $('[data-new]').onclick = () => go('#/new');
+  const h1 = $('.bar h1'); let taps = 0, tapT;
+  h1.onclick = () => { taps++; clearTimeout(tapT); tapT = setTimeout(() => taps = 0, 1500);
+    if (taps >= 5) { taps = 0; const on = !isInternal(); lsSet(LSI, on ? '1' : null); track('internal_tester', {on}); toast(on ? 'מצב בדיקה: פועל' : 'מצב בדיקה: כבוי'); } };
   document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => go('#/r/' + b.dataset.open));
 }
 
@@ -361,7 +395,9 @@ function viewNew(){
   wireChips('n-flt'); wireChips('n-ready'); wireChips('n-warr');
   const later = $('#n-later');
   later.onclick = () => { const on = later.getAttribute('aria-pressed') !== 'true'; later.setAttribute('aria-pressed', on); $('#n-price').disabled = on; if (on) $('#n-price').value = ''; };
+  let demo = false;
   $('[data-demo]').onclick = () => {
+    demo = true;
     $('#n-name').value = 'דני'; $('#n-dev').value = 'iPhone 13';
     document.querySelectorAll('#n-flt .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.v === 'sc' ? 'true' : 'false'));
     $('#n-cond').value = 'שריטה קטנה בגב'; $('#n-price').value = '650';
@@ -374,11 +410,13 @@ function viewNew(){
     const checks = [['#n-name', !n, 'חסר שם לקוח'], ['#n-phone', !validMobile(ph), 'מספר נייד לא תקין'], ['#n-dev', !d, 'חסר מכשיר']];
     for (const [sel, bad] of checks) $(sel).classList.toggle('err', bad);
     const firstBad = checks.find(c => c[1]);
-    if (firstBad) { toast(firstBad[2]); $(firstBad[0]).focus(); return; }
-    if (!f.length && !x) { toast('בחר מה התקלה'); return; }
-    if (!isLater && !pv) { toast('חסרה הערכת מחיר (או "אחרי בדיקה")'); $('#n-price').focus(); return; }
+    if (firstBad) { track('form_error', {form:'new', field:{'#n-name':'name', '#n-phone':'phone', '#n-dev':'device'}[firstBad[0]]}); toast(firstBad[2]); $(firstBad[0]).focus(); return; }
+    if (!f.length && !x) { track('form_error', {form:'new', field:'fault'}); toast('בחר מה התקלה'); return; }
+    if (!isLater && !pv) { track('form_error', {form:'new', field:'price'}); toast('חסרה הערכת מחיר (או "אחרי בדיקה")'); $('#n-price').focus(); return; }
     const r = {i:newId(), n, ph, d, f, x, cn, e: isLater ? null : Number(pv), r: addDays(Number(chipVals('n-ready')[0] ?? 1)), w: Number(chipVals('n-warr')[0] ?? 0), st:'rc', t: iso(new Date()), u: Date.now()};
     S.repairs.push(r); save();
+    track('card_created', {device:chipVals('n-devc')[0] || 'typed', faults:f.join(','), fault_count:f.length + (x ? 1 : 0), fault_note:!!x, condition:!!cn,
+      price:isLater ? 'after_check' : 'estimate', ready_days:Number(chipVals('n-ready')[0] ?? 1), warranty_days:r.w, demo, cards_total:S.repairs.length});
     const pr = r.e == null ? 'מחיר: אחרי בדיקה, נאשר איתך לפני שמתקנים' : 'הערכת מחיר: ' + shekel(r.e);
     openWA(ph, `היי ${n}, כאן ${S.shop.name} 👋\nקיבלנו את ה־${d} לתיקון (${faultText(r)}).\n${pr} · צפי: ${fmtDay(r.r)}\nכל הפרטים והעדכונים כאן:\n${custLink(r)}`);
     go('#/r/' + r.i);
@@ -420,27 +458,29 @@ function viewRepair(id){
     ${ticketHTML(c)}
     <div class="stack"><button class="btn btn-soft" data-preview>${IC.eye}לפתוח כמו הלקוח</button></div>`;
   $('[data-back]').onclick = () => go('#/');
-  $('[data-preview]').onclick = () => go('#c=' + payload(r));
+  $('[data-preview]').onclick = () => { track('customer_preview', {status:r.st}); go('#c=' + payload(r)); };
   document.querySelectorAll('[data-st]').forEach(b => b.onclick = () => {
     const s = b.dataset.st;
-    if (s === r.st) { openWA(r.ph, statusMsg(r)); return; }
+    if (s === r.st) { track('status_sent', {status:s, resend:true, days_open:daysSince(r.t)}); openWA(r.ph, statusMsg(r)); return; }
+    track('status_sent', {status:s, from:r.st, resend:false, days_open:daysSince(r.t)});
     r.st = s; r.u = Date.now(); if (s === 'pk') r.k = iso(new Date());
     save(); openWA(r.ph, statusMsg(r)); viewRepair(id);
   });
-  $('[data-price]').onclick = () => { $('#pricebox').classList.toggle('hidden'); $('#p-new').focus(); };
+  $('[data-price]').onclick = () => { const box = $('#pricebox'); box.classList.toggle('hidden'); if (!box.classList.contains('hidden')) track('price_box_opened', {status:r.st}); $('#p-new').focus(); };
   wireChips('p-why');
   $('[data-send-price]').onclick = () => {
     const np = $('#p-new').value.trim(); if (!np) { toast('חסר מחיר חדש'); return; }
     r.np = Number(np); r.nr = chipVals('p-why')[0] || ''; r.ok = false; r.u = Date.now(); save();
-    openWA(r.ph, `היי ${r.n}, ${r.nr ? 'בבדיקה של ה־' + r.d + ' ' + r.nr : 'עדכון מחיר לתיקון של ה־' + r.d}.\nהמחיר המעודכן:${shekel(r.np)}${r.e != null ? ' (במקום ' + shekel(r.e) + ')' : ''}.\nלא נמשיך בלי אישור שלך:\n${custLink(r)}`);
+    track('price_change_sent', {reason:['נדרש חלק נוסף','נמצאה תקלה נוספת','החלק יקר מהצפוי'].indexOf(r.nr) + 1, had_estimate:r.e != null, change:r.e != null ? r.np - r.e : null, status:r.st});
+    openWA(r.ph, `היי ${r.n}, ${r.nr ? 'בבדיקה של ה־' + r.d + ' ' + r.nr : 'עדכון מחיר לתיקון של ה־' + r.d}.\nהמחיר המעודכן: ${shekel(r.np)}${r.e != null ? ' (במקום ' + shekel(r.e) + ')' : ''}.\nלא נמשיך בלי אישור שלך:\n${custLink(r)}`);
     viewRepair(id);
   };
-  const ok = $('[data-approved]'); if (ok) ok.onclick = () => { r.ok = true; r.u = Date.now(); save(); toast('סומן כמאושר'); viewRepair(id); };
+  const ok = $('[data-approved]'); if (ok) ok.onclick = () => { track('price_approved_marked', {status:r.st}); r.ok = true; r.u = Date.now(); save(); toast('סומן כמאושר'); viewRepair(id); };
 }
 
 /* ---------- router ---------- */
 function route(){
-  S = load();
+  S = load(); viewShop = null;
   window.scrollTo(0,0);
   document.title = 'כרטיס תיקון';
   const h = location.hash;
@@ -452,6 +492,7 @@ function route(){
 }
 window.addEventListener('hashchange', route);
 route();
+track('app_open', location.hash.startsWith('#c=') ? {view:'customer'} : {view:'owner', has_shop:!!S.shop, cards:S.repairs.length, open_cards:S.repairs.filter(r => r.st !== 'pk').length});
 </script>
 </body>
 </html>
