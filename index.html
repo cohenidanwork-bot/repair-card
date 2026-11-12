@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>כרטיס תיקון</title>
+<title>א-פורמלי</title>
 <meta name="description" content="כל העדכונים על התיקון שלך, במקום אחד">
-<meta property="og:title" content="כרטיס תיקון">
+<meta property="og:title" content="א-פורמלי">
 <meta property="og:description" content="כל העדכונים על התיקון שלך, במקום אחד">
 <meta name="theme-color" content="#EFEBE3">
 <meta name="robots" content="noindex">
@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="כרטיס תיקון">
+<meta name="apple-mobile-web-app-title" content="א-פורמלי">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%231C1A17%22/%3E%3Cpath d=%22M9 11h14M9 16h14M9 21h8%22 stroke=%22%23FFFDF8%22 stroke-width=%222.4%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,6 +115,8 @@ a{color:inherit}
 .chip{min-height:40px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:15px;font-weight:500}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .chips + .input{margin-top:10px}
+.input[type=date]{display:block;-webkit-appearance:none;appearance:none}
+.input[type=date]::-webkit-date-and-time-value{text-align:right}
 .card{background:var(--paper);border-radius:18px;box-shadow:var(--shadow);padding:18px}
 .section-title{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin:22px 2px 10px}
 .err-msg{color:var(--accent);font-size:14px;margin-top:6px}
@@ -295,7 +297,7 @@ function viewCustomer(token){
     ${mine ? `<div class="preview-bar"><span>${IC.eye.replace('<svg','<svg style="width:18px;height:18px;vertical-align:-4px;margin-left:6px"')}ככה הלקוח רואה את זה</span><button data-back="#/r/${esc(c.i)}">חזרה</button></div>` : ''}
     ${ticketHTML(c)}
     ${c.p ? `<div class="stack"><button class="btn btn-wa" data-wa-ask>${IC.wa}שאלה? כתבו לנו בווטסאפ</button></div>` : ''}
-    <p class="foot">נפתח ב־${fmtFull(c.t)} · כרטיס תיקון</p>`;
+    <p class="foot">נפתח ב־${fmtFull(c.t)} · א-פורמלי</p>`;
   if (c.q) internalCard = true;
   viewShop = c.s || null;
   const cv = {status:c.st, preview:!!mine};
@@ -305,7 +307,7 @@ function viewCustomer(token){
   const call = $('[data-call]'); if (call) call.addEventListener('click', () => track('customer_call', cv));
   const rev = $('[data-review]'); if (rev) rev.addEventListener('click', () => track('review_clicked', Object.assign({custom_link:!!c.g}, cv)));
   const b = $('[data-back]'); if (b) b.onclick = () => go(b.dataset.back);
-  document.title = c.s + ' · כרטיס תיקון';
+  document.title = c.s + ' · א-פורמלי';
 }
 
 function viewSetup(){
@@ -385,14 +387,27 @@ function viewNew(){
       <div class="field"><label class="label" for="n-price">הערכת מחיר</label>
         <div class="price-in"><input class="input ltr" id="n-price" type="number" inputmode="numeric" placeholder="650"></div>
         <div class="chips" style="margin-top:10px"><button type="button" class="chip" id="n-later" aria-pressed="false">אחרי בדיקה</button></div></div>
-      <div class="field"><span class="label">מתי יהיה מוכן</span>${chipGroup('n-ready', READY.map(([v,l]) => [String(v), l]), false, '1')}</div>
+      <div class="field"><span class="label">מתי יהיה מוכן</span>${chipGroup('n-ready', [...READY.map(([v,l]) => [String(v), l]), ['d','תאריך אחר']], false, '1')}
+        <input class="input ltr hidden" id="n-rdate" type="date" min="${iso(new Date())}" aria-label="תאריך מוכן"></div>
       <div class="field" style="margin:0"><span class="label">אחריות על התיקון</span>${chipGroup('n-warr', WARR.map(([v,l]) => [String(v), l]), false, '90')}</div>
     </div>
     <div class="stack"><button class="btn btn-line" data-demo>מילוי לדוגמה</button></div>
     <div class="dock"><div class="in"><button class="btn btn-wa" data-create>${IC.wa}פתיחת כרטיס ושליחה ללקוח</button></div></div>`;
   $('[data-back]').onclick = () => go('#/');
   wireChips('n-devc', v => { const i = $('#n-dev'); i.value = v + ' '; i.focus(); });
-  wireChips('n-flt'); wireChips('n-ready'); wireChips('n-warr');
+  wireChips('n-flt'); wireChips('n-warr');
+  // "תאריך אחר": shows a date field and opens the phone's calendar right away; the chip then shows the picked day
+  const rdate = $('#n-rdate'), rchip = $('#n-ready .chip[data-v="d"]');
+  const showDay = () => { rchip.textContent = rdate.value ? fmtDay(rdate.value) : 'תאריך אחר'; };
+  wireChips('n-ready', v => {
+    const custom = v === 'd';
+    rdate.classList.toggle('hidden', !custom); rdate.classList.remove('err');
+    if (!custom) return;
+    if (!rdate.value) rdate.value = addDays(3);
+    showDay();
+    try { rdate.showPicker(); } catch(e){ rdate.focus(); }
+  });
+  rdate.addEventListener('change', () => { if (rdate.value && rdate.value < iso(new Date())) rdate.value = iso(new Date()); rdate.classList.remove('err'); showDay(); });
   const later = $('#n-later');
   later.onclick = () => { const on = later.getAttribute('aria-pressed') !== 'true'; later.setAttribute('aria-pressed', on); $('#n-price').disabled = on; if (on) $('#n-price').value = ''; };
   let demo = false;
@@ -413,10 +428,13 @@ function viewNew(){
     if (firstBad) { track('form_error', {form:'new', field:{'#n-name':'name', '#n-phone':'phone', '#n-dev':'device'}[firstBad[0]]}); toast(firstBad[2]); $(firstBad[0]).focus(); return; }
     if (!f.length && !x) { track('form_error', {form:'new', field:'fault'}); toast('בחר מה התקלה'); return; }
     if (!isLater && !pv) { track('form_error', {form:'new', field:'price'}); toast('חסרה הערכת מחיר (או "אחרי בדיקה")'); $('#n-price').focus(); return; }
-    const r = {i:newId(), n, ph, d, f, x, cn, e: isLater ? null : Number(pv), r: addDays(Number(chipVals('n-ready')[0] ?? 1)), w: Number(chipVals('n-warr')[0] ?? 0), st:'rc', t: iso(new Date()), u: Date.now()};
+    const rv = chipVals('n-ready')[0] ?? '1', customDay = rv === 'd';
+    if (customDay && !rdate.value) { track('form_error', {form:'new', field:'ready_date'}); rdate.classList.add('err'); toast('בחר תאריך'); return; }
+    const readyOn = customDay ? (rdate.value < iso(new Date()) ? iso(new Date()) : rdate.value) : addDays(Number(rv));
+    const r = {i:newId(), n, ph, d, f, x, cn, e: isLater ? null : Number(pv), r: readyOn, w: Number(chipVals('n-warr')[0] ?? 0), st:'rc', t: iso(new Date()), u: Date.now()};
     S.repairs.push(r); save();
     track('card_created', {device:chipVals('n-devc')[0] || 'typed', faults:f.join(','), fault_count:f.length + (x ? 1 : 0), fault_note:!!x, condition:!!cn,
-      price:isLater ? 'after_check' : 'estimate', ready_days:Number(chipVals('n-ready')[0] ?? 1), warranty_days:r.w, demo, cards_total:S.repairs.length});
+      price:isLater ? 'after_check' : 'estimate', ready_days:Math.round((new Date(r.r+'T12:00:00') - new Date(iso(new Date())+'T12:00:00'))/864e5), ready_custom:customDay, warranty_days:r.w, demo, cards_total:S.repairs.length});
     const pr = r.e == null ? 'מחיר: אחרי בדיקה, נאשר איתך לפני שמתקנים' : 'הערכת מחיר: ' + shekel(r.e);
     openWA(ph, `היי ${n}, כאן ${S.shop.name} 👋\nקיבלנו את ה־${d} לתיקון (${faultText(r)}).\n${pr} · צפי: ${fmtDay(r.r)}\nכל הפרטים והעדכונים כאן:\n${custLink(r)}`);
     go('#/r/' + r.i);
@@ -482,7 +500,7 @@ function viewRepair(id){
 function route(){
   S = load(); viewShop = null;
   window.scrollTo(0,0);
-  document.title = 'כרטיס תיקון';
+  document.title = 'א-פורמלי';
   const h = location.hash;
   if (h.startsWith('#c=')) return viewCustomer(h.slice(3));
   if (h === '#/setup') return viewSetup();
